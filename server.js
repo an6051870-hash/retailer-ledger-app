@@ -40,21 +40,19 @@ let accountsData = {
 let transactionLogs = [];
 let userProfile = {
     name: 'Ahmad Naeem',
-    phone: '0300-1234567',
+    phone: '03296051870',
     dp: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
     email: 'an6051870@gmail.com'
 };
 
-let verificationCodes = {};
-
-// Login Page
+// Login Page with Karyana Shop Background Image
 app.get('/login', (req, res) => {
     res.send(`
         <html>
         <head>
             <title>Ahmad Karyan Store - Professional Login</title>
             <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: url('https://i.ibb.co/3s7925X/shop-bg.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; backdrop-filter: blur(5px); background-color: rgba(0,0,0,0.6); }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://i.ibb.co/3s7925X/shop-bg.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
                 .login-box { background: rgba(255, 255, 255, 0.95); padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 380px; text-align: center; border-top: 5px solid #2e7d32; }
                 .store-logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32; margin-bottom: 10px; }
                 h2 { color: #1b5e20; margin: 5px 0 20px 0; font-size: 24px; }
@@ -67,10 +65,10 @@ app.get('/login', (req, res) => {
             <div class="login-box">
                 <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Logo" class="store-logo">
                 <h2>Ahmad Karyan Store</h2>
-                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Enter your mobile number to receive verification code</p>
-                <form action="/send-otp" method="POST">
-                    <input type="text" name="phone" placeholder="Enter Mobile Number (e.g. 0300...)" required>
-                    <button type="submit">Get Verification Code</button>
+                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Enter your mobile number to access secure ledger</p>
+                <form action="/login-submit" method="POST">
+                    <input type="text" name="phone" placeholder="Enter Mobile Number (e.g. 0329...)" required>
+                    <button type="submit">Login to Dashboard</button>
                 </form>
             </div>
         </body>
@@ -78,50 +76,14 @@ app.get('/login', (req, res) => {
     `);
 });
 
-app.post('/send-otp', (req, res) => {
+app.post('/login-submit', (req, res) => {
     const { phone } = req.body;
-    const otp = Math.floor(1000 + Math.random() * 9000);
-    verificationCodes[phone] = otp;
-
-    res.send(`
-        <html>
-        <head>
-            <title>Verify OTP - Ahmad Karyan Store</title>
-            <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: rgba(0,0,0,0.7); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
-                .login-box { background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 380px; text-align: center; border-top: 5px solid #2e7d32; }
-                h2 { color: #1b5e20; margin-bottom: 15px; }
-                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 18px; text-align: center; letter-spacing: 3px; font-weight: bold; }
-                button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-                button:hover { background: #1b5e20; }
-                .otp-badge { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; margin-bottom: 15px; border: 1px dashed #2e7d32; }
-            </style>
-        </head>
-        <body>
-            <div class="login-box">
-                <h2>🔐 Security Verification</h2>
-                <div class="otp-badge">
-                    Your Login Code: <span style="font-size: 20px; color: #d32f2f;">${otp}</span>
-                </div>
-                <form action="/verify-otp" method="POST">
-                    <input type="hidden" name="phone" value="${phone}">
-                    <input type="text" name="enteredOtp" placeholder="Enter 4-Digit Code" maxlength="4" required>
-                    <button type="submit">Verify & Login</button>
-                </form>
-            </div>
-        </body>
-        </html>
-    `);
-});
-
-app.post('/verify-otp', (req, res) => {
-    const { phone, enteredOtp } = req.body;
-    if (verificationCodes[phone] && verificationCodes[phone].toString() === enteredOtp.trim()) {
+    if (phone) {
+        userProfile.phone = phone;
         req.session.isAuthenticated = true;
-        delete verificationCodes[phone];
         res.redirect('/');
     } else {
-        res.send(`<script>alert('Invalid Verification Code! Please try again.'); window.location.href='/login';</script>`);
+        res.redirect('/login');
     }
 });
 
