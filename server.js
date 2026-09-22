@@ -1,5 +1,9 @@
 const express = require('express');
 const session = require('express-session');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
 const app = express();
 
 app.use(express.json());
@@ -10,17 +14,34 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Setup uploads folder for direct image uploading from device
+const uploadDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadDir));
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'dp-' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
 let accountsData = {
-    'JazzCash': { opening: 10000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/68Z48qW/jazzcash-logo.png' },
-    'EasyPaisa': { opening: 5000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/8b6K5g9/easypaisa-logo.png' },
-    'Bank Alfalah': { opening: 50000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/3s7925X/alfalah-logo.png' },
-    'JazzCash Business': { opening: 25000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/68Z48qW/jazzcash-business.png' }
+    'JazzCash': { opening: 10000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/JazzCash_Logo.png' },
+    'EasyPaisa': { opening: 5000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://play-lh.googleusercontent.com/10Wc490a1Vq0FzXpS7F2Q9Z6xV7xW9v3m1k9w2j8s5l6k3g2f1h0j9k8l7m6n5o4p' },
+    'Bank Alfalah': { opening: 50000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a2/Bank_Alfalah_Logo.svg' },
+    'JazzCash Business': { opening: 25000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e4/JazzCash_Logo.png' }
 };
 
 let transactionLogs = [];
 let userProfile = {
     name: 'Ahmad Naeem',
-    dp: 'https://i.ibb.co/4p3n67z/default-avatar.png',
+    dp: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
     email: 'an6051870@gmail.com'
 };
 
@@ -89,7 +110,7 @@ app.get('/', (req, res) => {
         tableRows += `
             <tr>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                    <img src="${d.logo}" alt="${acc}" style="width: 30px; height: 30px; object-fit: contain; border-radius: 50%;"> ${acc}
+                    <img src="${d.logo}" alt="${acc}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 50%; background: #fff; padding: 2px; border: 1px solid #ddd;"> ${acc}
                 </td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right;">Rs. ${d.opening.toLocaleString()}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; color: green;">+ Rs. ${d.cashIn.toLocaleString()}</td>
@@ -120,7 +141,7 @@ app.get('/', (req, res) => {
                 .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
                 .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
                 .profile-section { display: flex; align-items: center; gap: 15px; }
-                .profile-section img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; }
+                .profile-section img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; background: #fff; }
                 .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 14px; }
                 .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
                 .card { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; text-align: center; }
@@ -150,12 +171,12 @@ app.get('/', (req, res) => {
                     </div>
                 </div>
 
-                <!-- Update DP Form -->
-                <div style="background: #f1f8e9; padding: 10px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 14px; font-weight: bold; color: #2e7d32;">Change Profile Picture (DP Link):</span>
-                    <form action="/update-dp" method="POST" style="display: flex; gap: 10px; width: 60%;">
-                        <input type="text" name="dpUrl" placeholder="Paste Image URL here..." required style="padding: 6px;">
-                        <button type="submit" style="padding: 6px 12px; font-size: 13px;">Update DP</button>
+                <!-- Upload DP from Device Form -->
+                <div style="background: #f1f8e9; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px dashed #2e7d32;">
+                    <span style="font-size: 14px; font-weight: bold; color: #2e7d32;">Upload Profile Picture from Device:</span>
+                    <form action="/update-dp" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; width: 60%;">
+                        <input type="file" name="dpImage" accept="image/*" required style="background: #fff; padding: 5px; font-size: 13px;">
+                        <button type="submit" style="padding: 8px 15px; font-size: 13px;">Upload DP</button>
                     </form>
                 </div>
 
@@ -243,10 +264,11 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.post('/update-dp', (req, res) => {
+app.post('/update-dp', upload.single('dpImage'), (req, res) => {
     if (!req.session.isAuthenticated) return res.redirect('/login');
-    const { dpUrl } = req.body;
-    if (dpUrl) userProfile.dp = dpUrl;
+    if (req.file) {
+        userProfile.dp = '/uploads/' + req.file.filename;
+    }
     res.redirect('/');
 });
 
