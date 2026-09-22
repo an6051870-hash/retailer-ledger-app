@@ -10,40 +10,43 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// عارضی ڈیٹا بیس (اکاؤنٹس اور ٹرانزیکشنز کے لیے)
 let accountsData = {
-    'JazzCash': { opening: 10000, cashIn: 0, cashOut: 0, profit: 0 },
-    'EasyPaisa': { opening: 5000, cashIn: 0, cashOut: 0, profit: 0 },
-    'Bank Alfalah': { opening: 50000, cashIn: 0, cashOut: 0, profit: 0 },
-    'JazzCash Business': { opening: 25000, cashIn: 0, cashOut: 0, profit: 0 }
+    'JazzCash': { opening: 10000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/68Z48qW/jazzcash-logo.png' },
+    'EasyPaisa': { opening: 5000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/8b6K5g9/easypaisa-logo.png' },
+    'Bank Alfalah': { opening: 50000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/3s7925X/alfalah-logo.png' },
+    'JazzCash Business': { opening: 25000, cashIn: 0, cashOut: 0, profit: 0, logo: 'https://i.ibb.co/68Z48qW/jazzcash-business.png' }
 };
 
 let transactionLogs = [];
+let userProfile = {
+    name: 'Ahmad Naeem',
+    dp: 'https://i.ibb.co/4p3n67z/default-avatar.png',
+    email: 'an6051870@gmail.com'
+};
 
-// 1. لاگ ان پیج
+// Login Page
 app.get('/login', (req, res) => {
     res.send(`
         <html>
         <head>
             <title>Ahmad Karyan Store - Login</title>
             <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1b5e20, #2e7d32); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+                body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20, #2e7d32); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
                 .login-box { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); width: 350px; text-align: center; }
                 h2 { color: #1b5e20; margin-bottom: 20px; }
                 input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
                 button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
                 button:hover { background: #1b5e20; }
-                .error { color: red; font-size: 14px; margin-bottom: 10px; }
             </style>
         </head>
         <body>
             <div class="login-box">
                 <h2>🛒 Ahmad Karyan Store</h2>
-                <p style="color: #666; font-size: 14px;">لاگ ان کریں اور ڈیجیٹل حساب کتاب سنبھالیں</p>
+                <p style="color: #666; font-size: 14px;">Sign in to manage digital ledger</p>
                 <form action="/login" method="POST">
-                    <input type="text" name="username" placeholder="یوزر نیم (Username)" required>
-                    <input type="password" name="password" placeholder="پاسورڈ (Password)" required>
-                    <button type="submit">لاگ ان کریں</button>
+                    <input type="text" name="username" placeholder="Username (ahmad)" required>
+                    <input type="password" name="password" placeholder="Password (12345)" required>
+                    <button type="submit">Login</button>
                 </form>
             </div>
         </body>
@@ -53,37 +56,28 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    // آپ اپنا یوزر نیم اور پاسورڈ یہاں سیٹ کر سکتے ہیں (مثلاً: admin / 12345)
     if (username === 'ahmad' && password === '12345') {
         req.session.isAuthenticated = true;
         res.redirect('/');
     } else {
-        res.send(`<script>alert('غلط یوزر نیم یا پاسورڈ!'); window.location.href='/login';</script>`);
+        res.send(`<script>alert('Invalid Username or Password!'); window.location.href='/login';</script>`);
     }
 });
 
-// لاگ آؤٹ
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 });
 
-// 2. مین ڈیش بورڈ (ڈیلرز/بینکس کا حساب کتاب)
+// Main Dashboard
 app.get('/', (req, res) => {
-    if (!req.session.isAuthenticated) {
-        return res.redirect('/login');
-    }
+    if (!req.session.isAuthenticated) return res.redirect('/login');
 
-    let totalOpening = 0;
-    let totalCashIn = 0;
-    let totalCashOut = 0;
-    let totalClosing = 0;
-    let totalProfit = 0;
-
+    let totalOpening = 0, totalCashIn = 0, totalCashOut = 0, totalClosing = 0, totalProfit = 0;
     let tableRows = '';
+
     for (let acc in accountsData) {
         let d = accountsData[acc];
-        // فارمولہ: Closing = Opening + Cash In - Cash Out
         let closing = d.opening + d.cashIn - d.cashOut;
         
         totalOpening += d.opening;
@@ -94,7 +88,9 @@ app.get('/', (req, res) => {
 
         tableRows += `
             <tr>
-                <td style="padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold;">${acc}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #ddd; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                    <img src="${d.logo}" alt="${acc}" style="width: 30px; height: 30px; object-fit: contain; border-radius: 50%;"> ${acc}
+                </td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right;">Rs. ${d.opening.toLocaleString()}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; color: green;">+ Rs. ${d.cashIn.toLocaleString()}</td>
                 <td style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right; color: red;">- Rs. ${d.cashOut.toLocaleString()}</td>
@@ -118,12 +114,13 @@ app.get('/', (req, res) => {
     res.send(`
         <html>
         <head>
-            <title>Ahmad Karyan Store - Dashboard</title>
+            <title>Ahmad Karyan Store - Professional Dashboard</title>
             <style>
                 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
                 .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
                 .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
-                .header h1 { color: #1b5e20; margin: 0; font-size: 26px; }
+                .profile-section { display: flex; align-items: center; gap: 15px; }
+                .profile-section img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; }
                 .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 14px; }
                 .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
                 .card { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; text-align: center; }
@@ -141,36 +138,53 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🌾 Ahmad Karyan Store <span style="font-size: 16px; color: #666;">(Digital Ledger & Banking Hub)</span></h1>
-                    <a href="/logout" class="logout-btn">لاگ آؤٹ (Logout)</a>
+                    <div class="profile-section">
+                        <img src="${userProfile.dp}" alt="Profile DP">
+                        <div>
+                            <h2 style="margin: 0; color: #1b5e20; font-size: 22px;">Ahmad Karyan Store</h2>
+                            <p style="margin: 0; color: #666; font-size: 13px;">Owner: ${userProfile.name} | ${userProfile.email}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/logout" class="logout-btn">Logout</a>
+                    </div>
+                </div>
+
+                <!-- Update DP Form -->
+                <div style="background: #f1f8e9; padding: 10px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 14px; font-weight: bold; color: #2e7d32;">Change Profile Picture (DP Link):</span>
+                    <form action="/update-dp" method="POST" style="display: flex; gap: 10px; width: 60%;">
+                        <input type="text" name="dpUrl" placeholder="Paste Image URL here..." required style="padding: 6px;">
+                        <button type="submit" style="padding: 6px 12px; font-size: 13px;">Update DP</button>
+                    </form>
                 </div>
 
                 <!-- Summary Cards -->
                 <div class="summary-cards">
                     <div class="card">
-                        <h3>کل اوپننگ بیلنس</h3>
+                        <h3>Total Opening Balance</h3>
                         <p>Rs. ${totalOpening.toLocaleString()}</p>
                     </div>
                     <div class="card">
-                        <h3>کل کیش ان (Deposit)</h3>
+                        <h3>Total Cash In</h3>
                         <p style="color: green;">Rs. ${totalCashIn.toLocaleString()}</p>
                     </div>
                     <div class="card">
-                        <h3>کل کیش آؤٹ (Withdraw)</h3>
+                        <h3>Total Cash Out</h3>
                         <p style="color: red;">Rs. ${totalCashOut.toLocaleString()}</p>
                     </div>
                     <div class="card" style="border-left-color: #0d47a1; background: #e3f2fd;">
-                        <h3>کل متوقع پرافٹ</h3>
+                        <h3>Total Expected Profit</h3>
                         <p style="color: #0d47a1;">Rs. ${totalProfit.toLocaleString()}</p>
                     </div>
                 </div>
 
                 <!-- Main Accounts Table -->
-                <h2>📊 بینک اور جاز کیش اکاؤنٹس کا خلاصہ</h2>
+                <h2>📊 Bank & JazzCash Accounts Overview</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th>اکاؤنٹ کا نام</th>
+                            <th>Account Name</th>
                             <th style="text-align: right;">Opening Balance</th>
                             <th style="text-align: right;">Cash In</th>
                             <th style="text-align: right;">Cash Out</th>
@@ -185,42 +199,42 @@ app.get('/', (req, res) => {
 
                 <!-- Entry Form -->
                 <div class="form-section">
-                    <h3 style="margin-top: 0; color: #2e7d32;">➕ نئی ٹرانزیکشن شامل کریں</h3>
+                    <h3 style="margin-top: 0; color: #2e7d32;">➕ Add New Transaction</h3>
                     <form action="/add-transaction" method="POST">
                         <div class="form-row">
                             <select name="account" required>
-                                <option value="">اکاؤنٹ منتخب کریں</option>
+                                <option value="">Select Account</option>
                                 <option value="JazzCash">JazzCash</option>
                                 <option value="EasyPaisa">EasyPaisa</option>
                                 <option value="Bank Alfalah">Bank Alfalah</option>
                                 <option value="JazzCash Business">JazzCash Business</option>
                             </select>
                             <select name="type" required>
-                                <option value="Cash In">Cash In (رقم آئی)</option>
-                                <option value="Cash Out">Cash Out (رقم دی)</option>
+                                <option value="Cash In">Cash In (Deposit)</option>
+                                <option value="Cash Out">Cash Out (Withdraw)</option>
                             </select>
-                            <input type="number" name="amount" placeholder="رقم (Amount)" required>
-                            <input type="number" name="profit" placeholder="پرافٹ / کمیشن (Profit)" required>
-                            <input type="text" name="customer" placeholder="کسٹمر نام / نمبر" required>
+                            <input type="number" name="amount" placeholder="Amount (Rs)" required>
+                            <input type="number" name="profit" placeholder="Profit / Commission" required>
+                            <input type="text" name="customer" placeholder="Customer Name / Number" required>
                         </div>
-                        <button type="submit">انٹری محفوظ کریں</button>
+                        <button type="submit">Save Transaction</button>
                     </form>
                 </div>
 
                 <!-- Recent Transactions Log -->
-                <h3 style="margin-top: 30px;">🕒 حالیہ ٹرانزیکشنز کا ریکارڈ</h3>
+                <h3 style="margin-top: 30px;">🕒 Recent Transactions History</h3>
                 <table style="font-size: 14px;">
                     <thead>
-                        <tr style="background: #37474f;">
-                            <th>وقت</th>
-                            <th>اکاؤنٹ</th>
-                            <th>قسم</th>
-                            <th>رقم</th>
-                            <th>کسٹمر</th>
+                        <tr style="background: #37474f; color: white;">
+                            <th style="padding: 10px;">Time</th>
+                            <th style="padding: 10px;">Account</th>
+                            <th style="padding: 10px;">Type</th>
+                            <th style="padding: 10px;">Amount</th>
+                            <th style="padding: 10px;">Customer</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${logsHtml || '<tr><td colspan="5" style="text-align:center; padding:10px;">کوئی انٹری موجود نہیں۔</td></tr>'}
+                        ${logsHtml || '<tr><td colspan="5" style="text-align:center; padding:10px;">No transactions found.</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -229,7 +243,13 @@ app.get('/', (req, res) => {
     `);
 });
 
-// ٹرانزیکشن سیو کرنے کا روٹ اور فارمولے
+app.post('/update-dp', (req, res) => {
+    if (!req.session.isAuthenticated) return res.redirect('/login');
+    const { dpUrl } = req.body;
+    if (dpUrl) userProfile.dp = dpUrl;
+    res.redirect('/');
+});
+
 app.post('/add-transaction', (req, res) => {
     if (!req.session.isAuthenticated) return res.redirect('/login');
 
@@ -246,8 +266,9 @@ app.post('/add-transaction', (req, res) => {
         accountsData[account].profit += prf;
     }
 
+    let currentTime = new Date().toLocaleTimeString();
     transactionLogs.push({
-        time: new Date().toLocaleTimeString(),
+        time: currentTime,
         account,
         type,
         amount: amt.toLocaleString(),
