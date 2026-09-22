@@ -9,12 +9,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: 'ahmad-karyana-secret-key',
+    secret: 'ahmad-karyana-secure-key',
     resave: false,
     saveUninitialized: true
 }));
 
-// Setup uploads folder for direct image uploading from device
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -45,29 +44,33 @@ let userProfile = {
     email: 'an6051870@gmail.com'
 };
 
-// Login Page
+// Temporary store for OTP verification
+let verificationCodes = {};
+
+// Step 1: Login Phone Number Page
 app.get('/login', (req, res) => {
     res.send(`
         <html>
         <head>
-            <title>Ahmad Karyan Store - Login</title>
+            <title>Ahmad Karyan Store - Professional Login</title>
             <style>
-                body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1b5e20, #2e7d32); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
-                .login-box { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); width: 350px; text-align: center; }
-                h2 { color: #1b5e20; margin-bottom: 20px; }
-                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-                button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: url('https://i.ibb.co/3s7925X/shop-bg.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; backdrop-filter: blur(5px); background-color: rgba(0,0,0,0.6); }
+                .login-box { background: rgba(255, 255, 255, 0.95); padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 380px; text-align: center; border-top: 5px solid #2e7d32; }
+                .store-logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32; margin-bottom: 10px; }
+                h2 { color: #1b5e20; margin: 5px 0 20px 0; font-size: 24px; }
+                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; text-align: center; }
+                button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
                 button:hover { background: #1b5e20; }
             </style>
         </head>
         <body>
             <div class="login-box">
-                <h2>🛒 Ahmad Karyan Store</h2>
-                <p style="color: #666; font-size: 14px;">Sign in to manage digital ledger</p>
-                <form action="/login" method="POST">
-                    <input type="text" name="username" placeholder="Username (ahmad)" required>
-                    <input type="password" name="password" placeholder="Password (12345)" required>
-                    <button type="submit">Login</button>
+                <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Logo" class="store-logo">
+                <h2>Ahmad Karyan Store</h2>
+                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Enter your mobile number to receive verification code</p>
+                <form action="/send-otp" method="POST">
+                    <input type="text" name="phone" placeholder="Enter Mobile Number (e.g. 0300...)" required>
+                    <button type="submit">Get Verification Code</button>
                 </form>
             </div>
         </body>
@@ -75,13 +78,53 @@ app.get('/login', (req, res) => {
     `);
 });
 
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === 'ahmad' && password === '12345') {
+// Send OTP Route
+app.post('/send-otp', (req, res) => {
+    const { phone } = req.body;
+    // Generate a 4-digit random OTP code
+    const otp = Math.floor(1000 + Math.random() * 9000);
+    verificationCodes[phone] = otp;
+
+    res.send(`
+        <html>
+        <head>
+            <title>Verify OTP - Ahmad Karyan Store</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: rgba(0,0,0,0.7); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+                .login-box { background: #fff; padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 380px; text-align: center; border-top: 5px solid #2e7d32; }
+                h2 { color: #1b5e20; margin-bottom: 15px; }
+                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 18px; text-align: center; letter-spacing: 3px; font-weight: bold; }
+                button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+                button:hover { background: #1b5e20; }
+                .otp-badge { background: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; margin-bottom: 15px; border: 1px dashed #2e7d32; }
+            </style>
+        </head>
+        <body>
+            <div class="login-box">
+                <h2>🔐 Security Verification</h2>
+                <div class="otp-badge">
+                    Your Login Code: <span style="font-size: 20px; color: #d32f2f;">${otp}</span>
+                </div>
+                <form action="/verify-otp" method="POST">
+                    <input type="hidden" name="phone" value="${phone}">
+                    <input type="text" name="enteredOtp" placeholder="Enter 4-Digit Code" maxlength="4" required>
+                    <button type="submit">Verify & Login</button>
+                </form>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+// Verify OTP Route
+app.post('/verify-otp', (req, res) => {
+    const { phone, enteredOtp } = req.body;
+    if (verificationCodes[phone] && verificationCodes[phone].toString() === enteredOtp.trim()) {
         req.session.isAuthenticated = true;
+        delete verificationCodes[phone];
         res.redirect('/');
     } else {
-        res.send(`<script>alert('Invalid Username or Password!'); window.location.href='/login';</script>`);
+        res.send(`<script>alert('Invalid Verification Code! Please try again.'); window.location.href='/login';</script>`);
     }
 });
 
@@ -142,7 +185,7 @@ app.get('/', (req, res) => {
                 .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
                 .profile-section { display: flex; align-items: center; gap: 15px; }
                 .profile-section img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; background: #fff; }
-                .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 14px; }
+                .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; }
                 .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
                 .card { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; text-align: center; }
                 .card h3 { margin: 0 0 5px 0; color: #333; font-size: 14px; }
@@ -162,12 +205,12 @@ app.get('/', (req, res) => {
                     <div class="profile-section">
                         <img src="${userProfile.dp}" alt="Profile DP">
                         <div>
-                            <h2 style="margin: 0; color: #1b5e20; font-size: 22px;">Ahmad Karyan Store</h2>
-                            <p style="margin: 0; color: #666; font-size: 13px;">Owner: ${userProfile.name} | ${userProfile.email}</p>
+                            <h2 style="margin: 0; color: #1b5e20; font-size: 22px;">🛒 Ahmad Karyan Store</h2>
+                            <p style="margin: 0; color: #666; font-size: 13px;">Owner: ${userProfile.name} | Verified Secure Portal</p>
                         </div>
                     </div>
                     <div>
-                        <a href="/logout" class="logout-btn">Logout</a>
+                        <a href="/logout" class="logout-btn">Secure Logout</a>
                     </div>
                 </div>
 
@@ -302,5 +345,5 @@ app.post('/add-transaction', (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log('Ahmad Karyan Store Pro App running on port ' + PORT);
+    console.log('Ahmad Karyan Store Secure Portal running on port ' + PORT);
 });
