@@ -77,4 +77,14 @@ function sendMonthlyEmailStatement() {
 }
 
 const PORT = process.env.PORT || 8080;
+app.get('/', (req, res) => {
+    res.send(`
+        <h2>Retailer Ledger App is Live!</h2>
+        <p>Aapka system kam kar raha hai. API endpoints:</p>
+        <ul>
+            <li>POST /api/daily-entry (Rozana entry ke liye)</li>
+            <li>GET /api/ledger (Saara record dekhne ke liye)</li>
+        </ul>
+    `);
+});
 app.listen(PORT, () => console.log('Retailer App running on port ' + PORT));
