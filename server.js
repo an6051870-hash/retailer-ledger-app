@@ -45,19 +45,36 @@ let userProfile = {
     email: 'an6051870@gmail.com'
 };
 
-// Login Page with Karyana Shop Background Image
+// Login Page with Professional Karyana Products Background
 app.get('/login', (req, res) => {
     res.send(`
         <html>
         <head>
-            <title>Ahmad Karyan Store - Professional Login</title>
+            <title>Ahmad Karyan Store - Login</title>
             <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://i.ibb.co/3s7925X/shop-bg.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
-                .login-box { background: rgba(255, 255, 255, 0.95); padding: 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 380px; text-align: center; border-top: 5px solid #2e7d32; }
-                .store-logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32; margin-bottom: 10px; }
+                body { 
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                    background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed; 
+                    background-size: cover; 
+                    height: 100vh; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    margin: 0; 
+                }
+                .login-box { 
+                    background: rgba(255, 255, 255, 0.95); 
+                    padding: 40px; 
+                    border-radius: 15px; 
+                    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+                    width: 380px; 
+                    text-align: center; 
+                    border-top: 5px solid #2e7d32; 
+                }
+                .store-logo { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32; margin-bottom: 10px; background: #fff; }
                 h2 { color: #1b5e20; margin: 5px 0 20px 0; font-size: 24px; }
-                input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; text-align: center; }
-                button { background: #2e7d32; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+                input { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; text-align: center; }
+                button { background: #2e7d32; color: white; border: none; padding: 14px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; }
                 button:hover { background: #1b5e20; }
             </style>
         </head>
@@ -65,7 +82,7 @@ app.get('/login', (req, res) => {
             <div class="login-box">
                 <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Logo" class="store-logo">
                 <h2>Ahmad Karyan Store</h2>
-                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Enter your mobile number to access secure ledger</p>
+                <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Enter your mobile number to access ledger</p>
                 <form action="/login-submit" method="POST">
                     <input type="text" name="phone" placeholder="Enter Mobile Number (e.g. 0329...)" required>
                     <button type="submit">Login to Dashboard</button>
@@ -182,7 +199,7 @@ app.get('/', (req, res) => {
     res.send(`
         <html>
         <head>
-            <title>Ahmad Karyan Store - Professional Dashboard</title>
+            <title>Ahmad Karyan Store - Dashboard</title>
             <style>
                 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
                 .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -219,7 +236,6 @@ app.get('/', (req, res) => {
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
                 <div class="summary-cards">
                     <div class="card">
                         <h3>Total Opening Balance</h3>
@@ -239,7 +255,6 @@ app.get('/', (req, res) => {
                     </div>
                 </div>
 
-                <!-- Main Accounts Table -->
                 <h2>📊 Bank & JazzCash Accounts Overview</h2>
                 <table>
                     <thead>
@@ -257,7 +272,6 @@ app.get('/', (req, res) => {
                     </tbody>
                 </table>
 
-                <!-- Entry Form -->
                 <div class="form-section">
                     <h3 style="margin-top: 0; color: #2e7d32;">➕ Add New Transaction</h3>
                     <form action="/add-transaction" method="POST">
@@ -281,7 +295,6 @@ app.get('/', (req, res) => {
                     </form>
                 </div>
 
-                <!-- Recent Transactions Log -->
                 <h3 style="margin-top: 30px;">🕒 Recent Transactions History</h3>
                 <table style="font-size: 14px;">
                     <thead>
