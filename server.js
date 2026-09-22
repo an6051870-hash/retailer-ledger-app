@@ -14,6 +14,6 @@ app.post('/api/daily-entry', (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log('Retailer App running on port ' + PORT);
 });
