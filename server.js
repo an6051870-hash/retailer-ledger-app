@@ -40,14 +40,14 @@ let accountsData = {
 let transactionLogs = [];
 let userProfile = {
     name: 'Ahmad Naeem',
+    phone: '0300-1234567',
     dp: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
     email: 'an6051870@gmail.com'
 };
 
-// Temporary store for OTP verification
 let verificationCodes = {};
 
-// Step 1: Login Phone Number Page
+// Login Page
 app.get('/login', (req, res) => {
     res.send(`
         <html>
@@ -78,10 +78,8 @@ app.get('/login', (req, res) => {
     `);
 });
 
-// Send OTP Route
 app.post('/send-otp', (req, res) => {
     const { phone } = req.body;
-    // Generate a 4-digit random OTP code
     const otp = Math.floor(1000 + Math.random() * 9000);
     verificationCodes[phone] = otp;
 
@@ -116,7 +114,6 @@ app.post('/send-otp', (req, res) => {
     `);
 });
 
-// Verify OTP Route
 app.post('/verify-otp', (req, res) => {
     const { phone, enteredOtp } = req.body;
     if (verificationCodes[phone] && verificationCodes[phone].toString() === enteredOtp.trim()) {
@@ -131,6 +128,51 @@ app.post('/verify-otp', (req, res) => {
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
+});
+
+// Profile Details Page
+app.get('/profile', (req, res) => {
+    if (!req.session.isAuthenticated) return res.redirect('/login');
+    res.send(`
+        <html>
+        <head>
+            <title>Ahmad Karyan Store - Profile Details</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; }
+                .profile-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 420px; text-align: center; border-top: 5px solid #2e7d32; }
+                .profile-card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32; margin-bottom: 15px; }
+                h2 { color: #1b5e20; margin: 5px 0; }
+                p { color: #555; margin: 8px 0; font-size: 15px; }
+                .info-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left; border: 1px solid #ddd; }
+                .info-box p { margin: 6px 0; }
+                .btn { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; margin-top: 10px; }
+                .btn:hover { background: #1b5e20; }
+                .back-link { display: block; margin-top: 15px; color: #1b5e20; text-decoration: none; font-weight: bold; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="profile-card">
+                <img src="${userProfile.dp}" alt="Owner DP">
+                <h2>${userProfile.name}</h2>
+                <p style="color: #666; font-size: 13px;">Store Owner & Administrator</p>
+                
+                <div class="info-box">
+                    <p><strong>📧 Email:</strong> ${userProfile.email}</p>
+                    <p><strong>📞 Mobile Number:</strong> ${userProfile.phone}</p>
+                    <p><strong>🛒 Store Name:</strong> Ahmad Karyan Store</p>
+                </div>
+
+                <form action="/update-dp" method="POST" enctype="multipart/form-data" style="margin-top: 15px; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px dashed #2e7d32;">
+                    <p style="font-size: 13px; font-weight: bold; color: #2e7d32; margin-bottom: 8px;">Change Profile Picture:</p>
+                    <input type="file" name="dpImage" accept="image/*" required style="font-size: 12px; margin-bottom: 8px;"><br>
+                    <button type="submit" class="btn" style="padding: 8px 15px; font-size: 13px;">Upload New DP</button>
+                </form>
+
+                <a href="/" class="back-link">← Back to Dashboard</a>
+            </div>
+        </body>
+        </html>
+    `);
 });
 
 // Main Dashboard
@@ -182,9 +224,10 @@ app.get('/', (req, res) => {
             <style>
                 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
                 .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 20px; }
-                .profile-section { display: flex; align-items: center; gap: 15px; }
-                .profile-section img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; background: #fff; }
+                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 15px; margin-bottom: 25px; }
+                .profile-section { display: flex; align-items: center; gap: 15px; text-decoration: none; color: inherit; }
+                .profile-section img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #2e7d32; background: #fff; transition: 0.2s; }
+                .profile-section img:hover { transform: scale(1.05); border-color: #1b5e20; }
                 .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; }
                 .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
                 .card { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 5px solid #2e7d32; text-align: center; }
@@ -202,25 +245,16 @@ app.get('/', (req, res) => {
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="profile-section">
+                    <a href="/profile" class="profile-section" title="Click to view Profile Details">
                         <img src="${userProfile.dp}" alt="Profile DP">
                         <div>
                             <h2 style="margin: 0; color: #1b5e20; font-size: 22px;">🛒 Ahmad Karyan Store</h2>
-                            <p style="margin: 0; color: #666; font-size: 13px;">Owner: ${userProfile.name} | Verified Secure Portal</p>
+                            <p style="margin: 0; color: #666; font-size: 13px;">Owner: ${userProfile.name} | <span style="color: #2e7d32; text-decoration: underline;">View Profile</span></p>
                         </div>
-                    </div>
+                    </a>
                     <div>
                         <a href="/logout" class="logout-btn">Secure Logout</a>
                     </div>
-                </div>
-
-                <!-- Upload DP from Device Form -->
-                <div style="background: #f1f8e9; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px dashed #2e7d32;">
-                    <span style="font-size: 14px; font-weight: bold; color: #2e7d32;">Upload Profile Picture from Device:</span>
-                    <form action="/update-dp" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; width: 60%;">
-                        <input type="file" name="dpImage" accept="image/*" required style="background: #fff; padding: 5px; font-size: 13px;">
-                        <button type="submit" style="padding: 8px 15px; font-size: 13px;">Upload DP</button>
-                    </form>
                 </div>
 
                 <!-- Summary Cards -->
@@ -312,7 +346,7 @@ app.post('/update-dp', upload.single('dpImage'), (req, res) => {
     if (req.file) {
         userProfile.dp = '/uploads/' + req.file.filename;
     }
-    res.redirect('/');
+    res.redirect('/profile');
 });
 
 app.post('/add-transaction', (req, res) => {
