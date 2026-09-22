@@ -3,17 +3,18 @@ const app = express();
 
 app.use(express.json());
 
-// Home page route taaki error na aaye
+// Shop Home Page with Ahmad Karyan Store Name
 app.get('/', (req, res) => {
-    res.send('Retailer Ledger App is Live!');
-});
-
-// Dummy API route for daily entry
-app.post('/api/daily-entry', (req, res) => {
-    res.json({ success: true, message: 'Entry saved successfully!' });
+    res.send(`
+        <div style="font-family: Arial; text-align: center; margin-top: 50px;">
+            <h1 style="color: #e60000;">Ahmad Karyan Store</h1>
+            <h3>JazzCash & Retail Ledger System</h3>
+            <p>خوش آمدید! آپ کی دکان کا حساب کتاب سسٹم لائیو ہے۔</p>
+        </div>
+    `);
 });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log('Retailer App running on port ' + PORT);
+    console.log('Ahmad Karyan Store App running on port ' + PORT);
 });
